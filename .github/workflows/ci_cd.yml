@@ -5,6 +5,7 @@ on:
     branches: ["main"]
 
 jobs:
+
   build-test:
     runs-on: self-hosted
 
@@ -17,12 +18,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Start services with docker-compose (PowerShell)
+      - name: Start services with docker-compose
         shell: powershell
         run: |
           docker-compose down -v
           docker-compose up -d --build
-
           Write-Host "Esperando que php_app esté listo..."
 
           $maxAttempts = 20
@@ -53,7 +53,7 @@ jobs:
       - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app ./vendor/bin/phpunit tests
+          docker exec php_app php ./vendor/bin/phpunit tests
 
   deploy:
     needs: build-test
