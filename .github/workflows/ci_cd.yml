@@ -33,7 +33,7 @@ jobs:
                   break
               }
               catch {
-                  Write-Host "Intento $i/$maxAttempts: Esperando 5s..."
+                  Write-Host ("Intento {0}/{1}: Esperando 5s..." -f $i, $maxAttempts)
                   Start-Sleep -Seconds 5
               }
           }
