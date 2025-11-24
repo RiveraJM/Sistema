@@ -18,16 +18,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Start services with docker-compose
+      - name: Start services with docker-compose (PowerShell)
         shell: powershell
         run: |
           docker-compose down -v
           docker-compose up -d --build
+          
           Write-Host "Esperando que php_app esté listo..."
 
           $maxAttempts = 20
           $success = $false
-
+          
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
                   docker exec php_app curl -I http://localhost -m 5
@@ -46,14 +47,13 @@ jobs:
               exit 1
           }
 
+      - name: Run PHPUnit tests
+        shell: powershell
+        run: docker exec php_app ./vendor/bin/phpunit tests
+
       - name: Verify containers are running
         shell: powershell
         run: docker ps
-
-      - name: Run PHPUnit tests inside php_app
-        shell: powershell
-        run: |
-          docker exec php_app php ./vendor/bin/phpunit tests
 
   deploy:
     needs: build-test
@@ -64,6 +64,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
+
+      - name: Limpiar logs antiguos del runner
+        shell: powershell
+        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*.log" -ErrorAction SilentlyContinue
 
       - name: Deploy (restart containers)
         shell: powershell
