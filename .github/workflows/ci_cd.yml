@@ -50,6 +50,23 @@ jobs:
         shell: powershell
         run: docker ps
 
+      - name: Reset database (opcional)
+        shell: powershell
+        run: |
+          docker exec php_app mysql -uadmin -padminpass -D sistema_clinico -e "
+            SET FOREIGN_KEY_CHECKS=0;
+            TRUNCATE TABLE citas;
+            TRUNCATE TABLE pacientes;
+            TRUNCATE TABLE medicos;
+            TRUNCATE TABLE usuarios;
+            SET FOREIGN_KEY_CHECKS=1;
+          "
+          Write-Host "Base de datos reseteada para tests."
+
+      - name: Run PHPUnit tests
+        shell: powershell
+        run: docker exec php_app ./vendor/bin/phpunit tests
+
   deploy:
     needs: build-test
     runs-on: self-hosted
