@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  php:
+    build: .
+    container_name: php_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    volumes:
+      - ./:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: admin
+      DB_PASS: adminpass
+      DB_NAME: sistema_clinico
+    user: root  # evita problemas de permisos en Windows
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_app
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: sistema_clinico
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

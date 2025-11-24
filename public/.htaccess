@@ -1,0 +1,41 @@
+# ===============================================
+# .htaccess para Sistema Clínico - Docker/Apache
+# ===============================================
+
+# Evitar listado de archivos cuando no hay index
+Options -Indexes
+
+# Archivo por defecto
+DirectoryIndex index.php
+
+# Activar URL rewriting para rutas limpias
+RewriteEngine On
+RewriteBase /
+
+# -------------------------------
+# Bloquear acceso a archivos sensibles
+# -------------------------------
+<FilesMatch "\.(env|json|lock|md|gitignore|yaml|yml|xml)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acceso a otros archivos ocultos
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# -------------------------------
+# Rutas limpias y redirección
+# -------------------------------
+# Si la URL no apunta a un archivo o directorio real, se agrega .php automáticamente
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ $1.php [L]
+
+# -------------------------------
+# Opcional: redirigir raíz al login
+# -------------------------------
+# Si quieres que al entrar a / vaya directo a login.php
+RewriteRule ^$ login.php [L]

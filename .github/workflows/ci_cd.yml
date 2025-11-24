@@ -1,0 +1,58 @@
+name: CI/CD PHP Docker
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+
+  build-test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start services with docker-compose
+        shell: pwsh
+        run: |
+          docker-compose down -v
+          docker-compose up -d --build
+          Write-Host "Esperando que PHP contenedor responda en localhost:8080..."
+
+          $maxAttempts = 20
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+              try {
+                  $response = Invoke-WebRequest -Uri "http://localhost:8080" -UseBasicParsing -TimeoutSec 3
+                  Write-Host "Servicio activo!"
+                  break
+              }
+              catch {
+                  Write-Host "Intento $i/$maxAttempts: Esperando 5s..."
+                  Start-Sleep -Seconds 5
+              }
+          }
+
+      - name: Verify containers are running
+        run: docker ps
+
+      - name: Simple health check
+        run: curl -I http://localhost:8080 || exit 1
+
+  deploy:
+    needs: build-test
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy (restart containers)
+        run: |
+          docker-compose down -v
+          docker-compose up -d --build
+          echo "Despliegue completado. Contenedores activos:"
+          docker ps
