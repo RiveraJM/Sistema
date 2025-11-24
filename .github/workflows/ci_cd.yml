@@ -15,56 +15,39 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Start services with docker-compose (PowerShell)
         shell: powershell
         run: |
           docker-compose down -v
           docker-compose up -d --build
-          Write-Host "Esperando que PHP contenedor responda en http://localhost:8080..."
+
+          Write-Host "Esperando que php_app esté listo..."
 
           $maxAttempts = 20
           $success = $false
 
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
-                  $response = Invoke-WebRequest -Uri "http://localhost:8080" -UseBasicParsing -TimeoutSec 5
-                  Write-Host "Servicio activo! Status code:" $response.StatusCode
+                  docker exec php_app curl -I http://localhost -m 5
+                  Write-Host "php_app respondió!"
                   $success = $true
                   break
               }
               catch {
-                  Write-Host ("Intento {0}/{1}: Esperando 5s..." -f $i, $maxAttempts)
+                  Write-Host "Intento $i/$maxAttempts: Esperando 5s..."
                   Start-Sleep -Seconds 5
               }
           }
 
           if (-not $success) {
-              Write-Error "El servicio NUNCA respondió correctamente en http://localhost:8080 después de $maxAttempts intentos."
+              Write-Error "php_app NO respondió dentro del contenedor."
               exit 1
           }
 
-      - name: Verify containers are running
-        shell: powershell
-        run: docker ps
+      - name: Install Composer dependencies inside container
+        run: docker exec php_app composer install --no-interaction
 
-      - name: Reset database (opcional)
-        shell: powershell
-        run: |
-          docker exec php_app mysql -uadmin -padminpass -D sistema_clinico -e "
-            SET FOREIGN_KEY_CHECKS=0;
-            TRUNCATE TABLE citas;
-            TRUNCATE TABLE pacientes;
-            TRUNCATE TABLE medicos;
-            TRUNCATE TABLE usuarios;
-            SET FOREIGN_KEY_CHECKS=1;
-          "
-          Write-Host "Base de datos reseteada para tests."
-
-      - name: Run PHPUnit tests
-        shell: powershell
+      - name: Run PHPUnit tests inside container
         run: docker exec php_app ./vendor/bin/phpunit tests
 
   deploy:
