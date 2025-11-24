@@ -16,30 +16,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Start services with docker-compose
-        shell: pwsh
+      - name: Start services with docker-compose (Bash version)
+        shell: bash
         run: |
           docker-compose down -v
           docker-compose up -d --build
-          Write-Host "Esperando que PHP contenedor responda en localhost:8080..."
+          echo "Esperando que PHP contenedor responda en http://localhost:8080..."
 
-          $maxAttempts = 20
-          for ($i = 1; $i -le $maxAttempts; $i++) {
-              try {
-                  $response = Invoke-WebRequest -Uri "http://localhost:8080" -UseBasicParsing -TimeoutSec 3
-                  Write-Host "Servicio activo!"
+          maxAttempts=20
+          for i in $(seq 1 $maxAttempts); do
+              if curl -s http://localhost:8080 > /dev/null; then
+                  echo "Servicio activo!"
                   break
-              }
-              catch {
-                  Write-Host "Intento $i/$maxAttempts: Esperando 5s..."
-                  Start-Sleep -Seconds 5
-              }
-          }
+              else
+                  echo "Intento $i/$maxAttempts: Esperando 5s..."
+                  sleep 5
+              fi
+          done
 
       - name: Verify containers are running
+        shell: bash
         run: docker ps
 
       - name: Simple health check
+        shell: bash
         run: curl -I http://localhost:8080 || exit 1
 
   deploy:
@@ -51,6 +51,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy (restart containers)
+        shell: bash
         run: |
           docker-compose down -v
           docker-compose up -d --build
