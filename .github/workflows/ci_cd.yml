@@ -10,10 +10,6 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Clean runner diag pages (ignore errors)
-        shell: powershell
-        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*" -Force -Recurse -ErrorAction SilentlyContinue
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -57,23 +53,25 @@ jobs:
       - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml
+          docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml --testdox > /var/www/html/test_results.txt
 
-      - name: Upload test results
+      - name: Upload PHPUnit XML report
         uses: actions/upload-artifact@v4
         with:
-          name: phpunit-test-results
+          name: phpunit-test-report-xml
           path: ./test_results.xml
+
+      - name: Upload PHPUnit TXT report
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-test-report-txt
+          path: ./test_results.txt
 
   deploy:
     needs: build-test
     runs-on: self-hosted
 
     steps:
-      - name: Clean runner diag pages (ignore errors)
-        shell: powershell
-        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*" -Force -Recurse -ErrorAction SilentlyContinue
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
