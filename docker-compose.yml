@@ -30,6 +30,7 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - ./sistema_clinico.sql:/docker-entrypoint-initdb.d/sistema_clinico.sql
 
 volumes:
   db_data:

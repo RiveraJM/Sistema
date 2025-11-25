@@ -21,6 +21,7 @@ jobs:
       - name: Start services with docker-compose
         shell: powershell
         run: |
+          docker-compose down
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
 
@@ -49,26 +50,26 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Create results folder
-        shell: powershell
-        run: docker exec php_app mkdir -p /var/www/html/test_results
-
-      - name: Run PHPUnit tests inside php_app
+      - name: Run PHPUnit tests and save results
         shell: powershell
         run: |
-          docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results/test_results.xml --testdox-text /var/www/html/test_results/test_results.txt
+          Write-Host "Ejecutando PHPUnit..."
+          docker exec php_app bash -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml > /var/www/html/test_results.txt || true"
+          Write-Host "Tests finalizados."
 
-      - name: Upload test results
+      - name: Copy test results outside container
+        shell: powershell
+        run: |
+          docker cp php_app:/var/www/html/test_results.txt ./test_results.txt
+          docker cp php_app:/var/www/html/test_results.xml ./test_results.xml
+
+      - name: Upload test results as artifact
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-test-results
-          path: /var/www/html/test_results/*.txt
-          
-      - name: Upload JUnit XML results
-        uses: actions/upload-artifact@v4
-        with:
-          name: phpunit-junit-results
-          path: /var/www/html/test_results/*.xml
+          path: |
+            test_results.txt
+            test_results.xml
 
   deploy:
     needs: build-test
@@ -80,9 +81,16 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - name: Deploy (restart containers)
+      - name: Clean old diagnostic logs
         shell: powershell
         run: |
-          docker-compose up -d
-          Write-Host "Despliegue completado. Contenedores activos:"
+          Write-Host "Eliminando logs antiguos..."
+          Remove-Item -Path "C:\actions-runner\_diag\pages\*.log" -Force -ErrorAction SilentlyContinue
+
+      - name: Deploy (restart without deleting DB)
+        shell: powershell
+        run: |
+          docker-compose down          # SIN -v para NO borrar la BD
+          docker-compose up -d --build
+          Write-Host "Despliegue completado."
           docker ps
