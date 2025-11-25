@@ -18,17 +18,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Start services with docker-compose (PowerShell)
+      - name: Start services with docker-compose
         shell: powershell
         run: |
           docker-compose down -v
           docker-compose up -d --build
-          
           Write-Host "Esperando que php_app esté listo..."
 
           $maxAttempts = 20
           $success = $false
-          
+
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
                   docker exec php_app curl -I http://localhost -m 5
@@ -47,13 +46,14 @@ jobs:
               exit 1
           }
 
-      - name: Run PHPUnit tests
-        shell: powershell
-        run: docker exec php_app ./vendor/bin/phpunit tests
-
       - name: Verify containers are running
         shell: powershell
         run: docker ps
+
+      - name: Run PHPUnit tests inside php_app
+        shell: powershell
+        run: |
+          docker exec php_app php ./vendor/bin/phpunit tests
 
   deploy:
     needs: build-test
@@ -65,14 +65,38 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - name: Limpiar logs antiguos del runner
-        shell: powershell
-        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*.log" -ErrorAction SilentlyContinue
-
       - name: Deploy (restart containers)
         shell: powershell
         run: |
           docker-compose down -v
           docker-compose up -d --build
+          Write-Host "Esperando que php_app esté listo después del deploy..."
+
+          $maxAttempts = 20
+          $success = $false
+
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+              try {
+                  docker exec php_app curl -I http://localhost -m 5
+                  Write-Host "php_app respondió!"
+                  $success = $true
+                  break
+              }
+              catch {
+                  Write-Host ("Intento {0}/{1}: Esperando 5s..." -f $i, $maxAttempts)
+                  Start-Sleep -Seconds 5
+              }
+          }
+
+          if (-not $success) {
+              Write-Error "php_app NO respondió dentro del contenedor después del deploy."
+              exit 1
+          }
+
           Write-Host "Despliegue completado. Contenedores activos:"
           docker ps
+
+      - name: Run PHPUnit tests inside php_app (deploy)
+        shell: powershell
+        run: |
+          docker exec php_app php ./vendor/bin/phpunit tests
