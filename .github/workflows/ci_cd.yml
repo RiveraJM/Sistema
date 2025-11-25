@@ -50,10 +50,40 @@ jobs:
         shell: powershell
         run: docker ps
 
+      # === Ejecuta pruebas unitarias y guarda hallazgos ===
       - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app php ./vendor/bin/phpunit tests
+          docker exec php_app php ./vendor/bin/phpunit --colors=never --verbose > phpunit_results.txt
+
+      # === Genera cobertura de código y guarda en archivo ===
+      - name: Run PHPUnit with code coverage
+        shell: powershell
+        run: |
+          docker exec php_app php ./vendor/bin/phpunit --coverage-text --colors=never > coverage_results.txt
+
+      # === Validación de estilo (PHP_CodeSniffer) ===
+      - name: Check code style with PHPCS
+        shell: powershell
+        run: |
+          docker exec php_app ./vendor/bin/phpcs --standard=PSR12 ./src > phpcs_results.txt || true
+
+      # === Análisis estático (PHPStan) ===
+      - name: Run static analysis with PHPStan
+        shell: powershell
+        run: |
+          docker exec php_app ./vendor/bin/phpstan analyse ./src -l 5 > phpstan_results.txt || true
+
+      # === Subir reportes como artefactos ===
+      - name: Upload reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-quality-reports
+          path: |
+            phpunit_results.txt
+            coverage_results.txt
+            phpcs_results.txt
+            phpstan_results.txt
 
   deploy:
     needs: build-test
