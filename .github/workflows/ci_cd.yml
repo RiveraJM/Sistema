@@ -24,10 +24,8 @@ jobs:
           docker-compose down -v
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
-
           $maxAttempts = 20
           $success = $false
-
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
                   docker exec php_app curl -I http://localhost -m 5
@@ -40,7 +38,6 @@ jobs:
                   Start-Sleep -Seconds 5
               }
           }
-
           if (-not $success) {
               Write-Error "php_app NO respondió dentro del contenedor."
               exit 1
@@ -50,11 +47,49 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Run PHPUnit tests inside php_app
+      - name: Prepare database for tests
+        shell: powershell
+        run: |
+          docker exec php_app php ./tests/setup.php
+
+      - name: Run PHPUnit tests inside php_app and generate XML
         shell: powershell
         run: |
           docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml
-          docker exec php_app bash -c "php ./vendor/bin/phpunit tests > /var/www/html/test_results.txt || true"
+
+      - name: Generate professional TXT summary from PHPUnit results
+        shell: powershell
+        run: |
+          docker exec php_app php -r "
+          \$xml = simplexml_load_file('/var/www/html/test_results.xml');
+          \$summary = \"PHPUnit Professional Test Report\" . PHP_EOL;
+          \$summary .= str_repeat('=', 40) . PHP_EOL;
+          \$summary .= 'Total tests: ' . \$xml['tests'] . PHP_EOL;
+          \$summary .= 'Assertions: ' . \$xml['assertions'] . PHP_EOL;
+          \$summary .= 'Failures: ' . \$xml['failures'] . PHP_EOL;
+          \$summary .= 'Errors: ' . \$xml['errors'] . PHP_EOL;
+          \$summary .= str_repeat('-', 40) . PHP_EOL;
+
+          foreach (\$xml->testsuite->testcase as \$case) {
+              if (isset(\$case->failure)) {
+                  \$summary .= '[FAIL] ' . \$case['classname'] . '::' . \$case['name'] . ' - ' . trim((string)\$case->failure) . PHP_EOL;
+              }
+              if (isset(\$case->error)) {
+                  \$summary .= '[ERROR] ' . \$case['classname'] . '::' . \$case['name'] . ' - ' . trim((string)\$case->error) . PHP_EOL;
+              }
+          }
+
+          \$summary .= str_repeat('=', 40) . PHP_EOL;
+          file_put_contents('/var/www/html/test_summary.txt', \$summary);
+          "
+
+      - name: Save PHPUnit results and professional summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: phpunit-results
+          path: |
+            ./test_results.xml
+            ./test_summary.txt
 
   deploy:
     needs: build-test
@@ -65,12 +100,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
-
-      - name: Clean old diagnostic logs
-        shell: powershell
-        run: |
-          Write-Host "Eliminando logs antiguos de diagnóstico..."
-          Remove-Item -Path "C:\actions-runner\_diag\pages\*.log" -Force -ErrorAction SilentlyContinue
 
       - name: Deploy (restart containers)
         shell: powershell
