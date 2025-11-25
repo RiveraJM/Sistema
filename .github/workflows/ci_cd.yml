@@ -24,8 +24,10 @@ jobs:
           docker-compose down -v
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
+
           $maxAttempts = 20
           $success = $false
+
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
                   docker exec php_app curl -I http://localhost -m 5
@@ -38,6 +40,7 @@ jobs:
                   Start-Sleep -Seconds 5
               }
           }
+
           if (-not $success) {
               Write-Error "php_app NO respondió dentro del contenedor."
               exit 1
@@ -47,44 +50,14 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Prepare database for tests
+      - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app php ./tests/setup.php
+          docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml \
+            | tee /var/www/html/test_summary.txt
 
-      - name: Run PHPUnit tests inside php_app and generate XML
-        shell: powershell
-        run: |
-          docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml
-
-      - name: Generate professional TXT summary from PHPUnit results
-        shell: powershell
-        run: |
-          docker exec php_app php -r "
-          \$xml = simplexml_load_file('/var/www/html/test_results.xml');
-          \$summary = \"PHPUnit Professional Test Report\" . PHP_EOL;
-          \$summary .= str_repeat('=', 40) . PHP_EOL;
-          \$summary .= 'Total tests: ' . \$xml['tests'] . PHP_EOL;
-          \$summary .= 'Assertions: ' . \$xml['assertions'] . PHP_EOL;
-          \$summary .= 'Failures: ' . \$xml['failures'] . PHP_EOL;
-          \$summary .= 'Errors: ' . \$xml['errors'] . PHP_EOL;
-          \$summary .= str_repeat('-', 40) . PHP_EOL;
-
-          foreach (\$xml->testsuite->testcase as \$case) {
-              if (isset(\$case->failure)) {
-                  \$summary .= '[FAIL] ' . \$case['classname'] . '::' . \$case['name'] . ' - ' . trim((string)\$case->failure) . PHP_EOL;
-              }
-              if (isset(\$case->error)) {
-                  \$summary .= '[ERROR] ' . \$case['classname'] . '::' . \$case['name'] . ' - ' . trim((string)\$case->error) . PHP_EOL;
-              }
-          }
-
-          \$summary .= str_repeat('=', 40) . PHP_EOL;
-          file_put_contents('/var/www/html/test_summary.txt', \$summary);
-          "
-
-      - name: Save PHPUnit results and professional summary
-        uses: actions/upload-artifact@v3
+      - name: Upload PHPUnit results and summary
+        uses: actions/upload-artifact@v4
         with:
           name: phpunit-results
           path: |
