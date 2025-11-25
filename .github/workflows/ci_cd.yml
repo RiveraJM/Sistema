@@ -21,8 +21,7 @@ jobs:
       - name: Start services with docker-compose
         shell: powershell
         run: |
-          # No eliminamos volúmenes para mantener la base de datos
-          docker-compose down
+          docker-compose down -v
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
 
@@ -51,20 +50,14 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Run PHPUnit tests inside php_app
+      - name: Run PHPUnit tests and save results
         shell: powershell
         run: |
           # Creamos carpeta de resultados si no existe
           docker exec php_app sh -c "mkdir -p /var/www/html/test_results"
-          docker exec php_app php ./vendor/bin/phpunit tests \
-            --log-junit /var/www/html/test_results/test_results.xml \
-            --testdox > /var/www/html/test_results/test_results.txt
 
-      - name: Upload test results artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: phpunit-results
-          path: ./test_results/
+          # Ejecutamos PHPUnit dentro del contenedor y guardamos resultados en XML y TXT
+          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results/test_results.xml --testdox > /var/www/html/test_results/test_results.txt"
 
   deploy:
     needs: build-test
@@ -76,11 +69,10 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - name: Deploy (restart containers without deleting DB)
+      - name: Deploy (restart containers)
         shell: powershell
         run: |
-          # Solo reiniciamos contenedores, no borramos volúmenes
-          docker-compose stop
+          docker-compose down -v
           docker-compose up -d --build
           Write-Host "Despliegue completado. Contenedores activos:"
           docker ps
