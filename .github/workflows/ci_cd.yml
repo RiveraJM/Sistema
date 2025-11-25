@@ -21,7 +21,8 @@ jobs:
       - name: Start services with docker-compose
         shell: powershell
         run: |
-          docker-compose down -v
+          # No eliminamos volúmenes para mantener la base de datos
+          docker-compose down
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
 
@@ -50,21 +51,20 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Run PHPUnit tests inside php_app and save results
+      - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app bash -c "mkdir -p /var/www/html && php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml --testdox > /var/www/html/test_results.txt"
+          # Creamos carpeta de resultados si no existe
+          docker exec php_app sh -c "mkdir -p /var/www/html/test_results"
+          docker exec php_app php ./vendor/bin/phpunit tests \
+            --log-junit /var/www/html/test_results/test_results.xml \
+            --testdox > /var/www/html/test_results/test_results.txt
 
-      - name: Show test results
-        shell: powershell
-        run: |
-          docker exec php_app cat /var/www/html/test_results.txt
-
-      - name: Upload test results as artifact
+      - name: Upload test results artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: phpunit-test-results
-          path: ./test_results.txt
+          name: phpunit-results
+          path: ./test_results/
 
   deploy:
     needs: build-test
@@ -76,10 +76,11 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
 
-      - name: Deploy (restart containers)
+      - name: Deploy (restart containers without deleting DB)
         shell: powershell
         run: |
-          docker-compose down -v
+          # Solo reiniciamos contenedores, no borramos volúmenes
+          docker-compose stop
           docker-compose up -d --build
           Write-Host "Despliegue completado. Contenedores activos:"
           docker ps
