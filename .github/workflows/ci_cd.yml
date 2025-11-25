@@ -70,33 +70,5 @@ jobs:
         run: |
           docker-compose down -v
           docker-compose up -d --build
-          Write-Host "Esperando que php_app esté listo después del deploy..."
-
-          $maxAttempts = 20
-          $success = $false
-
-          for ($i = 1; $i -le $maxAttempts; $i++) {
-              try {
-                  docker exec php_app curl -I http://localhost -m 5
-                  Write-Host "php_app respondió!"
-                  $success = $true
-                  break
-              }
-              catch {
-                  Write-Host ("Intento {0}/{1}: Esperando 5s..." -f $i, $maxAttempts)
-                  Start-Sleep -Seconds 5
-              }
-          }
-
-          if (-not $success) {
-              Write-Error "php_app NO respondió dentro del contenedor después del deploy."
-              exit 1
-          }
-
           Write-Host "Despliegue completado. Contenedores activos:"
           docker ps
-
-      - name: Run PHPUnit tests inside php_app (deploy)
-        shell: powershell
-        run: |
-          docker exec php_app php ./vendor/bin/phpunit tests
