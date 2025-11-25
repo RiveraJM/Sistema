@@ -21,13 +21,10 @@ jobs:
       - name: Start services with docker-compose
         shell: powershell
         run: |
-          docker-compose down -v
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
-
           $maxAttempts = 20
           $success = $false
-
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
                   docker exec php_app curl -I http://localhost -m 5
@@ -40,7 +37,6 @@ jobs:
                   Start-Sleep -Seconds 5
               }
           }
-
           if (-not $success) {
               Write-Error "php_app NO respondió dentro del contenedor."
               exit 1
@@ -50,14 +46,19 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Run PHPUnit tests and save results
+      - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          # Creamos carpeta de resultados si no existe
           docker exec php_app sh -c "mkdir -p /var/www/html/test_results"
+          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results/test_results.xml --testdox-text /var/www/html/test_results/test_results.txt"
 
-          # Ejecutamos PHPUnit dentro del contenedor y guardamos resultados en XML y TXT
-          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results/test_results.xml --testdox > /var/www/html/test_results/test_results.txt"
+      - name: Upload test results artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-test-results
+          path: |
+            ./test_results/test_results.txt
+            ./test_results/test_results.xml
 
   deploy:
     needs: build-test
@@ -72,7 +73,6 @@ jobs:
       - name: Deploy (restart containers)
         shell: powershell
         run: |
-          docker-compose down -v
-          docker-compose up -d --build
+          docker-compose up -d
           Write-Host "Despliegue completado. Contenedores activos:"
           docker ps
