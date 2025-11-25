@@ -10,10 +10,6 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Limpiar logs del runner
-        shell: powershell
-        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*" -Force -Recurse -ErrorAction SilentlyContinue
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -25,7 +21,6 @@ jobs:
       - name: Start services with docker-compose
         shell: powershell
         run: |
-          docker-compose down -v
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
 
@@ -54,34 +49,32 @@ jobs:
         shell: powershell
         run: docker ps
 
-      - name: Crear carpeta de resultados de PHPUnit
+      - name: Create results folder
         shell: powershell
         run: docker exec php_app mkdir -p /var/www/html/test_results
 
       - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app php ./vendor/bin/phpunit tests \
-            --log-junit /var/www/html/test_results/test_results.xml \
-            --testdox-text /var/www/html/test_results/test_results.txt
+          docker exec php_app php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results/test_results.xml --testdox-text /var/www/html/test_results/test_results.txt
 
-      - name: Upload PHPUnit results as artifacts
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-test-results
-          path: |
-            ./test_results/test_results.xml
-            ./test_results/test_results.txt
+          path: /var/www/html/test_results/*.txt
+          
+      - name: Upload JUnit XML results
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-junit-results
+          path: /var/www/html/test_results/*.xml
 
   deploy:
     needs: build-test
     runs-on: self-hosted
 
     steps:
-      - name: Limpiar logs del runner
-        shell: powershell
-        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*" -Force -Recurse -ErrorAction SilentlyContinue
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
