@@ -10,6 +10,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Limpiar logs del runner
+        shell: powershell
+        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*" -Force -Recurse -ErrorAction SilentlyContinue
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -21,10 +25,13 @@ jobs:
       - name: Start services with docker-compose
         shell: powershell
         run: |
+          docker-compose down -v
           docker-compose up -d --build
           Write-Host "Esperando que php_app esté listo..."
+
           $maxAttempts = 20
           $success = $false
+
           for ($i = 1; $i -le $maxAttempts; $i++) {
               try {
                   docker exec php_app curl -I http://localhost -m 5
@@ -37,6 +44,7 @@ jobs:
                   Start-Sleep -Seconds 5
               }
           }
+
           if (-not $success) {
               Write-Error "php_app NO respondió dentro del contenedor."
               exit 1
@@ -46,25 +54,34 @@ jobs:
         shell: powershell
         run: docker ps
 
+      - name: Crear carpeta de resultados de PHPUnit
+        shell: powershell
+        run: docker exec php_app mkdir -p /var/www/html/test_results
+
       - name: Run PHPUnit tests inside php_app
         shell: powershell
         run: |
-          docker exec php_app sh -c "mkdir -p /var/www/html/test_results"
-          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results/test_results.xml --testdox-text /var/www/html/test_results/test_results.txt"
+          docker exec php_app php ./vendor/bin/phpunit tests \
+            --log-junit /var/www/html/test_results/test_results.xml \
+            --testdox-text /var/www/html/test_results/test_results.txt
 
-      - name: Upload test results artifacts
+      - name: Upload PHPUnit results as artifacts
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-test-results
           path: |
-            ./test_results/test_results.txt
             ./test_results/test_results.xml
+            ./test_results/test_results.txt
 
   deploy:
     needs: build-test
     runs-on: self-hosted
 
     steps:
+      - name: Limpiar logs del runner
+        shell: powershell
+        run: Remove-Item -Path "C:\actions-runner\_diag\pages\*" -Force -Recurse -ErrorAction SilentlyContinue
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
