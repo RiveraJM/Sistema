@@ -24,7 +24,7 @@
                 <div class="feature-item">
                     <i class="fas fa-calendar-check"></i>
                     <div>
-                        <h3>Gestión de Citas</h3>
+                        <h3>Gestión de Citasss</h3>
                         <p>Sistema inteligente de agendamiento</p>
                     </div>
                 </div>

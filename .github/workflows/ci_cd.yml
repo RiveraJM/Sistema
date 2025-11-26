@@ -54,14 +54,14 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Ejecutando PHPUnit..."
-          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml > /var/www/html/test_results.txt || true"
+          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.txt || true"
           Write-Host "Tests finalizados."
 
       - name: Copy test results outside container
         shell: powershell
         run: |
           docker cp php_app:/var/www/html/test_results.txt ./test_results.txt
-          docker cp php_app:/var/www/html/test_results.xml ./test_results.xml
+
 
       - name: Upload test results as artifact
         uses: actions/upload-artifact@v4
@@ -69,7 +69,7 @@ jobs:
           name: phpunit-test-results
           path: |
             test_results.txt
-            test_results.xml
+            
 
   deploy:
     needs: build-test
