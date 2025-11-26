@@ -53,7 +53,7 @@
                 <?php if(isset($_GET['error'])): ?>
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>Credenciales incorrectas. Por favor, intentar nuevamente.</span>
+                    <span>Credenciales incorrectas. intentar nuevamente.</span>
                 </div>
                 <?php endif; ?>
                 
@@ -82,7 +82,7 @@
                             <input type="checkbox" name="remember">
                             <span>Recordarme</span>
                         </label>
-                        <a href="#" class="forgot-password">¿Olvidastes tu contraseña?</a>
+                        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
                     </div>
                     
                     <button type="submit" class="btn btn-login">
