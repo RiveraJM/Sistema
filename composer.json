@@ -1,5 +1,8 @@
 {
     "require-dev": {
         "phpunit/phpunit": "^11"
+    },
+    "require": {
+        "predis/predis": "^3.3"
     }
 }
