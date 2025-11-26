@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $database = new Database();
         $db = $database->getConnection();
 
-        // Buscar usuario activo
+        // Buscar usuario activooooo
         $query = "SELECT u.*, GROUP_CONCAT(p.nombre) as permisos 
                   FROM usuarios u
                   LEFT JOIN usuario_permisos up ON u.id = up.usuario_id
