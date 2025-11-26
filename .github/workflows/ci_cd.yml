@@ -2,9 +2,9 @@ name: CI/CD PHP Docker
 
 on:
   push:
-    branches: ["develop"]
+    branches: ["develop", "main"]
   pull_request:
-    branches: ["develop"]
+    branches: ["develop", "main"]
 
 jobs:
 
@@ -55,23 +55,23 @@ jobs:
       - name: Run PHPUnit tests and save results
         shell: powershell
         run: |
-          Write-Host "Ejecutando PHPUnit..."
+          Write-Host "Ejecutando PHPUnit en ${{ github.ref_name }}..."
           docker exec php_app bash -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml > /var/www/html/test_results.txt || true"
           Write-Host "Tests finalizados."
 
       - name: Copy test results outside container
         shell: powershell
         run: |
-          docker cp php_app:/var/www/html/test_results.txt ./test_results.txt
-          docker cp php_app:/var/www/html/test_results.xml ./test_results.xml
+          docker cp php_app:/var/www/html/test_results.txt ./test_results_${{ github.ref_name }}.txt
+          docker cp php_app:/var/www/html/test_results.xml ./test_results_${{ github.ref_name }}.xml
 
       - name: Upload test results as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: phpunit-test-results
+          name: phpunit-test-results-${{ github.ref_name }}
           path: |
-            test_results.txt
-            test_results.xml
+            test_results_${{ github.ref_name }}.txt
+            test_results_${{ github.ref_name }}.xml
 
   deploy:
     needs: build-test
@@ -94,5 +94,5 @@ jobs:
         run: |
           docker-compose down          # SIN -v para NO borrar la BD
           docker-compose up -d --build
-          Write-Host "Despliegue completado."
+          Write-Host "Despliegue completado en ${{ github.ref_name }}."
           docker ps

@@ -82,7 +82,7 @@
                             <input type="checkbox" name="remember">
                             <span>Recordarme</span>
                         </label>
-                        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                        <a href="#" class="forgot-password">¿Olvidastes tu contraseña?</a>
                     </div>
                     
                     <button type="submit" class="btn btn-login">
