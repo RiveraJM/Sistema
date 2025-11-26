@@ -53,7 +53,7 @@
                 <?php if(isset($_GET['error'])): ?>
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>Credenciales incorrectas. Por favor, intenta nuevamente.</span>
+                    <span>Credenciales incorrectas. Por favor, intenta nuevamenteeee.</span>
                 </div>
                 <?php endif; ?>
                 
