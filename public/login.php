@@ -48,12 +48,12 @@
         <div class="login-right">
             <div class="login-form-container">
                 <h2>Iniciar Sesión</h2>
-                <p class="login-subtitle">Ingresa tus credenciales para acceder</p>
+                <p class="login-subtitle">Ingresa tus credenciales para acceder por favor</p>
                 
                 <?php if(isset($_GET['error'])): ?>
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span>Credenciales incorrectas. Por favor, intenta nuevamente.</span>
+                    <span>Credenciales incorrectas. Por favor, intentar nuevamente.</span>
                 </div>
                 <?php endif; ?>
                 

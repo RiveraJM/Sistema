@@ -1,0 +1,52 @@
+name: CI Feature
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start services (Docker Compose)
+        shell: powershell
+        run: |
+          docker-compose down
+          docker-compose up -d --build
+
+          Write-Host "Esperando que php_app esté listo..."
+          $maxAttempts = 20
+          $success = $false
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+              Start-Sleep -Seconds 5
+              $status = docker inspect -f '{{.State.Health.Status}}' php_app 2>$null
+              if ($status -eq "healthy") {
+                  $success = $true
+                  break
+              }
+          }
+          if (-not $success) {
+              Write-Error "php_app no está saludable"
+              exit 1
+          }
+
+      - name: Run PHPUnit Tests
+        shell: powershell
+        run: |
+          docker exec php_app php ./vendor/bin/phpunit tests \
+            --testdox-text /var/www/html/test_results/test_results.txt
+
+      - name: Stop services
+        if: always()
+        shell: powershell
+        run: docker-compose down
