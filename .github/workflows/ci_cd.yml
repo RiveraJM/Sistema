@@ -55,7 +55,7 @@ jobs:
         run: |
           Write-Host "Ejecutando PHPUnit..."
 
-          docker exec php_app sh -lc "cd /var/www && mkdir -p tests-output && php ./vendor/bin/phpunit tests --log-junit tests-output/test_results.xml > tests-output/test_results.txt || echo 'PHPUnit falló, revisar test_results.txt.' >> tests-output/test_results.txt"
+          docker exec php_app sh -lc "cd /var/www && mkdir -p tests-output && php ./vendor/bin/phpunit tests > tests-output/test_results.txt || echo 'PHPUnit falló, revisar test_results.txt.' >> tests-output/test_results.txt"
 
           Write-Host 'Tests finalizados.'
 
@@ -63,7 +63,6 @@ jobs:
         shell: powershell
         run: |
           docker cp php_app:/var/www/tests-output/test_results.txt ./test_results.txt
-          docker cp php_app:/var/www/tests-output/test_results.xml ./test_results.xml || echo "No se generó XML."
 
       - name: Upload test results as artifact
         uses: actions/upload-artifact@v4
@@ -71,7 +70,6 @@ jobs:
           name: phpunit-test-results
           path: |
             test_results.txt
-            test_results.xml
 
   deploy:
     needs: build-test
