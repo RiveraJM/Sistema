@@ -1,4 +1,4 @@
-<!-- Agregar después del título en el header -->
+<!-- Agregar después del título en el headerjejejejejejejej -->
 <div style="flex: 1; max-width: 500px; margin: 0 20px;">
     <form method="GET" action="buscar.php" style="position: relative;">
         <input type="text" 
