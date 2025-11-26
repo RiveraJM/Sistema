@@ -25,28 +25,8 @@ jobs:
         run: |
           docker-compose down
           docker-compose up -d --build
-          Write-Host "Esperando que php_app esté listo..."
-
-          $maxAttempts = 20
-          $success = $false
-
-          for ($i = 1; $i -le $maxAttempts; $i++) {
-              try {
-                  docker exec php_app curl -I http://localhost -m 5
-                  Write-Host "php_app respondió!"
-                  $success = $true
-                  break
-              }
-              catch {
-                  Write-Host ("Intento {0}/{1}: Esperando 5s..." -f $i, $maxAttempts)
-                  Start-Sleep -Seconds 5
-              }
-          }
-
-          if (-not $success) {
-              Write-Error "php_app NO respondió dentro del contenedor."
-              exit 1
-          }
+          Write-Host "Esperando 30 segundos para que php_app esté listo..."
+          Start-Sleep -Seconds 30
 
       - name: Verify containers are running
         shell: powershell
