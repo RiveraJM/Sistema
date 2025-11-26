@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="CLI Arguments" tests="32" assertions="30" errors="5" failures="3" skipped="0" time="18.972748">
+    <testsuite name="CitasTest" file="/var/www/html/tests/CitasTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="4.126642">
+      <testcase name="testAgregarCita" file="/var/www/html/tests/CitasTest.php" line="18" class="CitasTest" classname="CitasTest" assertions="1" time="4.126642"/>
+    </testsuite>
+    <testsuite name="ConnectionTest" file="/var/www/html/tests/ConnectionTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.402119">
+      <testcase name="testDatabaseConnection" file="/var/www/html/tests/ConnectionTest.php" line="8" class="ConnectionTest" classname="ConnectionTest" assertions="1" time="0.089556"/>
+      <testcase name="testCanQueryTables" file="/var/www/html/tests/ConnectionTest.php" line="20" class="ConnectionTest" classname="ConnectionTest" assertions="1" time="0.312563"/>
+    </testsuite>
+    <testsuite name="FunctionsTest" file="/var/www/html/tests/FunctionsTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.105811">
+      <testcase name="testSanitizeInput" file="/var/www/html/tests/FunctionsTest.php" line="11" class="FunctionsTest" classname="FunctionsTest" assertions="1" time="0.103184"/>
+      <testcase name="testDatabaseConnection" file="/var/www/html/tests/FunctionsTest.php" line="19" class="FunctionsTest" classname="FunctionsTest" assertions="1" time="0.002627"/>
+    </testsuite>
+    <testsuite name="LoginTest" file="/var/www/html/tests/LoginTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.743090">
+      <testcase name="testUsuarioExiste" file="/var/www/html/tests/LoginTest.php" line="20" class="LoginTest" classname="LoginTest" assertions="1" time="0.270653"/>
+      <testcase name="testLoginCorrecto" file="/var/www/html/tests/LoginTest.php" line="48" class="LoginTest" classname="LoginTest" assertions="1" time="0.472437"/>
+    </testsuite>
+    <testsuite name="PacientesCRUDTest" file="/var/www/html/tests/PacientesCRUDTest.php" tests="3" assertions="3" errors="0" failures="0" skipped="0" time="1.739326">
+      <testcase name="testCrearPaciente" file="/var/www/html/tests/PacientesCRUDTest.php" line="20" class="PacientesCRUDTest" classname="PacientesCRUDTest" assertions="1" time="0.167826"/>
+      <testcase name="testActualizarPaciente" file="/var/www/html/tests/PacientesCRUDTest.php" line="37" class="PacientesCRUDTest" classname="PacientesCRUDTest" assertions="1" time="1.006445"/>
+      <testcase name="testEliminarPaciente" file="/var/www/html/tests/PacientesCRUDTest.php" line="55" class="PacientesCRUDTest" classname="PacientesCRUDTest" assertions="1" time="0.565055"/>
+    </testsuite>
+    <testsuite name="PacientesTest" file="/var/www/html/tests/PacientesTest.php" tests="10" assertions="12" errors="0" failures="1" skipped="0" time="9.152726">
+      <testcase name="testAgregarPaciente" file="/var/www/html/tests/PacientesTest.php" line="21" class="PacientesTest" classname="PacientesTest" assertions="1" time="1.359426"/>
+      <testcase name="testDNIDuplicadoNoPermitido" file="/var/www/html/tests/PacientesTest.php" line="47" class="PacientesTest" classname="PacientesTest" assertions="1" time="0.609437"/>
+      <testcase name="testActualizarPaciente" file="/var/www/html/tests/PacientesTest.php" line="67" class="PacientesTest" classname="PacientesTest" assertions="1" time="0.481768"/>
+      <testcase name="testEliminarPaciente" file="/var/www/html/tests/PacientesTest.php" line="96" class="PacientesTest" classname="PacientesTest" assertions="1" time="0.286315"/>
+      <testcase name="testObtenerPacientePorId" file="/var/www/html/tests/PacientesTest.php" line="119" class="PacientesTest" classname="PacientesTest" assertions="1" time="0.370673"/>
+      <testcase name="testListarPacientesActivos" file="/var/www/html/tests/PacientesTest.php" line="141" class="PacientesTest" classname="PacientesTest" assertions="2" time="0.614183"/>
+      <testcase name="testSQLInjectionEnDNI" file="/var/www/html/tests/PacientesTest.php" line="150" class="PacientesTest" classname="PacientesTest" assertions="1" time="0.079200"/>
+      <testcase name="testXSSNoPermitidoEnNombre" file="/var/www/html/tests/PacientesTest.php" line="163" class="PacientesTest" classname="PacientesTest" assertions="1" time="2.739574">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">PacientesTest::testXSSNoPermitidoEnNombre
+No se debe guardar un script sin sanitizar
+Failed asserting that '&lt;script&gt;alert(1)&lt;/script&gt;' is not equal to '&lt;script&gt;alert(1)&lt;/script&gt;'.
+
+/var/www/html/tests/PacientesTest.php:178</failure>
+      </testcase>
+      <testcase name="testPacienteTieneRelacionConCita" file="/var/www/html/tests/PacientesTest.php" line="184" class="PacientesTest" classname="PacientesTest" assertions="2" time="1.780690"/>
+      <testcase name="testPacienteConSeguro" file="/var/www/html/tests/PacientesTest.php" line="226" class="PacientesTest" classname="PacientesTest" assertions="1" time="0.831458"/>
+    </testsuite>
+    <testsuite name="UsuariosTest" file="/var/www/html/tests/UsuariosTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.278213">
+      <testcase name="testAgregarUsuario" file="/var/www/html/tests/UsuariosTest.php" line="20" class="UsuariosTest" classname="UsuariosTest" assertions="1" time="0.278213"/>
+    </testsuite>
+    <testsuite name="PacientesEdgeCasesTest" file="/var/www/html/tests/pacientes/PacientesEdgeCasesTest.php" tests="2" assertions="2" errors="0" failures="2" skipped="0" time="0.278222">
+      <testcase name="testPacienteSinNombreDebeFallar" file="/var/www/html/tests/pacientes/PacientesEdgeCasesTest.php" line="20" class="PacientesEdgeCasesTest" classname="PacientesEdgeCasesTest" assertions="1" time="0.119797">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">PacientesEdgeCasesTest::testPacienteSinNombreDebeFallar
+Failed asserting that exception of type "PDOException" is thrown.</failure>
+      </testcase>
+      <testcase name="testPacienteConFechaFuturaDebeFallar" file="/var/www/html/tests/pacientes/PacientesEdgeCasesTest.php" line="32" class="PacientesEdgeCasesTest" classname="PacientesEdgeCasesTest" assertions="1" time="0.158425">
+        <failure type="PHPUnit\Framework\ExpectationFailedException">PacientesEdgeCasesTest::testPacienteConFechaFuturaDebeFallar
+Failed asserting that exception of type "PDOException" is thrown.</failure>
+      </testcase>
+    </testsuite>
+    <testsuite name="PacientesRelacionesTest" file="/var/www/html/tests/pacientes/PacientesRelacionesTest.php" tests="2" assertions="3" errors="0" failures="0" skipped="0" time="2.073347">
+      <testcase name="testPacienteConCita" file="/var/www/html/tests/pacientes/PacientesRelacionesTest.php" line="20" class="PacientesRelacionesTest" classname="PacientesRelacionesTest" assertions="2" time="1.481025"/>
+      <testcase name="testPacienteConSeguro" file="/var/www/html/tests/pacientes/PacientesRelacionesTest.php" line="60" class="PacientesRelacionesTest" classname="PacientesRelacionesTest" assertions="1" time="0.592322"/>
+    </testsuite>
+    <testsuite name="PacientesSeguridadTest" file="/var/www/html/tests/pacientes/PacientesSeguridadTest.php" tests="5" assertions="0" errors="5" failures="0" skipped="0" time="0.000000">
+      <testcase name="testSanitizacionEntrada" file="/var/www/html/tests/pacientes/PacientesSeguridadTest.php" line="54" class="PacientesSeguridadTest" classname="PacientesSeguridadTest" assertions="0" time="0.000000">
+        <error type="PHPUnit\Framework\MockObject\Generator\UnknownTypeException">PacientesSeguridadTest::testSanitizacionEntrada
+PHPUnit\Framework\MockObject\Generator\UnknownTypeException: Class or interface "App\Config\Database" does not exist
+
+/var/www/html/tests/pacientes/PacientesSeguridadTest.php:18</error>
+      </testcase>
+      <testcase name="testValidacionDniCorrecto" file="/var/www/html/tests/pacientes/PacientesSeguridadTest.php" line="66" class="PacientesSeguridadTest" classname="PacientesSeguridadTest" assertions="0" time="0.000000">
+        <error type="PHPUnit\Framework\MockObject\Generator\UnknownTypeException">PacientesSeguridadTest::testValidacionDniCorrecto
+PHPUnit\Framework\MockObject\Generator\UnknownTypeException: Class or interface "App\Config\Database" does not exist
+
+/var/www/html/tests/pacientes/PacientesSeguridadTest.php:18</error>
+      </testcase>
+      <testcase name="testValidacionDniIncorrecto" file="/var/www/html/tests/pacientes/PacientesSeguridadTest.php" line="77" class="PacientesSeguridadTest" classname="PacientesSeguridadTest" assertions="0" time="0.000000">
+        <error type="PHPUnit\Framework\MockObject\Generator\UnknownTypeException">PacientesSeguridadTest::testValidacionDniIncorrecto
+PHPUnit\Framework\MockObject\Generator\UnknownTypeException: Class or interface "App\Config\Database" does not exist
+
+/var/www/html/tests/pacientes/PacientesSeguridadTest.php:18</error>
+      </testcase>
+      <testcase name="testInsertarPacienteSeguro" file="/var/www/html/tests/pacientes/PacientesSeguridadTest.php" line="88" class="PacientesSeguridadTest" classname="PacientesSeguridadTest" assertions="0" time="0.000000">
+        <error type="PHPUnit\Framework\MockObject\Generator\UnknownTypeException">PacientesSeguridadTest::testInsertarPacienteSeguro
+PHPUnit\Framework\MockObject\Generator\UnknownTypeException: Class or interface "App\Config\Database" does not exist
+
+/var/www/html/tests/pacientes/PacientesSeguridadTest.php:18</error>
+      </testcase>
+      <testcase name="testPrevencionSqlInjection" file="/var/www/html/tests/pacientes/PacientesSeguridadTest.php" line="111" class="PacientesSeguridadTest" classname="PacientesSeguridadTest" assertions="0" time="0.000000">
+        <error type="PHPUnit\Framework\MockObject\Generator\UnknownTypeException">PacientesSeguridadTest::testPrevencionSqlInjection
+PHPUnit\Framework\MockObject\Generator\UnknownTypeException: Class or interface "App\Config\Database" does not exist
+
+/var/www/html/tests/pacientes/PacientesSeguridadTest.php:18</error>
+      </testcase>
+    </testsuite>
+    <testsuite name="PacientesValidacionesTest" file="/var/www/html/tests/pacientes/PacientesValidacionesTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.073251">
+      <testcase name="testDNINoNumericoDebeFallar" file="/var/www/html/tests/pacientes/PacientesValidacionesTest.php" line="20" class="PacientesValidacionesTest" classname="PacientesValidacionesTest" assertions="1" time="0.070917"/>
+      <testcase name="testNombreMuyLargoDebeFallar" file="/var/www/html/tests/pacientes/PacientesValidacionesTest.php" line="30" class="PacientesValidacionesTest" classname="PacientesValidacionesTest" assertions="1" time="0.002335"/>
+    </testsuite>
+  </testsuite>
+</testsuites>

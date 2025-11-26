@@ -3,7 +3,7 @@ FROM php:8.2-apache
 
 # Instalar extensiones necesarias
 RUN apt-get update && apt-get install -y \
-    git zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
+    git zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev curl \
     && docker-php-ext-install pdo pdo_mysql mysqli gd \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,3 +32,7 @@ RUN if [ -f composer.json ]; then composer install --no-interaction; fi
 
 # Exponer puerto 80
 EXPOSE 80
+
+# HEALTHCHECK para que Docker reporte estado de salud del contenedor
+HEALTHCHECK --interval=5s --timeout=3s --retries=12 \
+  CMD curl -f http://localhost/ || exit 1

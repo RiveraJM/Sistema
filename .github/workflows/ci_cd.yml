@@ -25,8 +25,26 @@ jobs:
         run: |
           docker-compose down
           docker-compose up -d --build
-          Write-Host "Esperando 30 segundos para que php_app esté listo..."
-          Start-Sleep -Seconds 30
+          Write-Host "Esperando que php_app esté listo..."
+
+          $maxAttempts = 20
+          $success = $false
+
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+              $status = docker inspect -f '{{.State.Health.Status}}' php_app 2>$null
+              if ($status -eq "healthy") {
+                  Write-Host "php_app está healthy!"
+                  $success = $true
+                  break
+              }
+              Write-Host ("Intento {0}/{1}: Esperando 5s..." -f $i, $maxAttempts)
+              Start-Sleep -Seconds 5
+          }
+
+          if (-not $success) {
+              Write-Error "php_app no está saludable después de $maxAttempts intentos"
+              exit 1
+          }
 
       - name: Verify containers are running
         shell: powershell
