@@ -8,14 +8,17 @@ services:
       - "8080:80"
     depends_on:
       - db
+      - redis              # ✅ AGREGADO: que espere también a Redis
     volumes:
-      - ./:/var/www/html
+      - ./:/var/www
     environment:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: admin
       DB_PASS: adminpass
       DB_NAME: sistema_clinico
+      REDIS_HOST: redis    # ✅ AGREGADO: datos de conexión para Redis
+      REDIS_PORT: 6379
     user: root  # evita problemas de permisos en Windows
 
   db:
@@ -31,6 +34,14 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./sistema_clinico.sql:/docker-entrypoint-initdb.d/sistema_clinico.sql
+
+  # ✅ NUEVO SERVICIO: REDIS
+  redis:
+    image: redis:7-alpine
+    container_name: redis_app
+    ports:
+      - "6379:6379"            # opcional, solo si quieres entrar desde tu PC
+    command: ["redis-server", "--appendonly", "no"]
 
 volumes:
   db_data:

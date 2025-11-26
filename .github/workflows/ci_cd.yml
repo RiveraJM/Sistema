@@ -2,9 +2,16 @@ name: CI/CD PHP Docker
 
 on:
   push:
-    branches: ["main, develop"]
+    branches:
+      - main
+      - develop
+      - 'release/*'
+      - 'feature/*'
+      - 'hotfix/*'
   pull_request:
-    branches: ["main, develop"]
+    branches:
+      - main
+      - develop
 
 jobs:
 
@@ -56,14 +63,15 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Ejecutando PHPUnit..."
-          docker exec php_app bash -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.xml > /var/www/html/test_results.txt || true"
-          Write-Host "Tests finalizados."
+
+          docker exec php_app sh -lc "cd /var/www && mkdir -p tests-output && php ./vendor/bin/phpunit tests > tests-output/test_results.txt || echo 'PHPUnit falló, revisar test_results.txt.' >> tests-output/test_results.txt"
+
+          Write-Host 'Tests finalizados.'
 
       - name: Copy test results outside container
         shell: powershell
         run: |
-          docker cp php_app:/var/www/html/test_results.txt ./test_results.txt
-          docker cp php_app:/var/www/html/test_results.xml ./test_results.xml
+          docker cp php_app:/var/www/tests-output/test_results.txt ./test_results.txt
 
       - name: Upload test results as artifact
         uses: actions/upload-artifact@v4
@@ -71,11 +79,12 @@ jobs:
           name: phpunit-test-results
           path: |
             test_results.txt
-            test_results.xml
 
   deploy:
     needs: build-test
     runs-on: self-hosted
+    # Solo desplegar cuando la rama es main
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout repository
