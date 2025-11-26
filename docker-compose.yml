@@ -9,7 +9,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./public:/var/www/html
+      - ./:/var/www/html
     environment:
       DB_HOST: db
       DB_PORT: 3306

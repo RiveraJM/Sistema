@@ -13,19 +13,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Activar mod_rewrite de Apache
 RUN a2enmod rewrite
 
-# Establecer directorio de trabajo
-WORKDIR /var/www/html
+# Establecer directorio de trabajo en el PROYECTO completo
+WORKDIR /var/www
 
-# Copiar la carpeta pública al contenedor primero
-COPY public /var/www/html
+# Copiar TODO el proyecto al contenedor
+COPY . /var/www
 
-# Copiar carpetas necesarias para PHP (config, includes)
+# Cambiar DocumentRoot de Apache para que apunte a /var/www/public
+RUN sed -i 's|/var/www/html|/var/www/public|g' /etc/apache2/sites-available/000-default.conf
 
-
-
-# Ajustar permisos de Apache
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Ajustar permisos
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www
 
 # Instalar dependencias si existe composer.json
 RUN if [ -f composer.json ]; then composer install --no-interaction; fi

@@ -54,14 +54,23 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Ejecutando PHPUnit..."
-          docker exec php_app sh -c "php ./vendor/bin/phpunit tests --log-junit /var/www/html/test_results.txt || true"
-          Write-Host "Tests finalizados."
+
+          docker exec php_app sh -c "
+            cd /var/www &&
+            mkdir -p tests-output &&
+            php ./vendor/bin/phpunit tests \
+              --log-junit tests-output/test_results.xml \
+              > tests-output/test_results.txt \
+            || echo 'PHPUnit falló, pero se generó este log.' > tests-output/test_results.txt
+          "
+
+          Write-Host 'Tests finalizados.'
 
       - name: Copy test results outside container
         shell: powershell
         run: |
-          docker cp php_app:/var/www/html/test_results.txt ./test_results.txt
-
+          docker cp php_app:/var/www/tests-output/test_results.txt ./test_results.txt
+          docker cp php_app:/var/www/tests-output/test_results.xml ./test_results.xml || echo "No se generó XML."
 
       - name: Upload test results as artifact
         uses: actions/upload-artifact@v4
@@ -69,7 +78,7 @@ jobs:
           name: phpunit-test-results
           path: |
             test_results.txt
-            
+            test_results.xml
 
   deploy:
     needs: build-test
@@ -90,12 +99,7 @@ jobs:
       - name: Deploy (restart without deleting DB)
         shell: powershell
         run: |
-          docker-compose down          # SIN -v para NO borrar la BD
+          docker-compose down
           docker-compose up -d --build
           Write-Host "Despliegue completado."
           docker ps
-
-
-
-
-
