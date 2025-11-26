@@ -54,7 +54,7 @@ foreach ($params as $key => $value) {
 $stmt->execute();
 $medicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Obtener lista de especialidades para filtro
+// Obtener toda la lista de especialidades para filtro
 $query_especialidades = "SELECT id, nombre FROM especialidades WHERE estado = 'activo' ORDER BY nombre";
 $stmt_especialidades = $db->query($query_especialidades);
 $especialidades = $stmt_especialidades->fetchAll(PDO::FETCH_ASSOC);
