@@ -8,7 +8,7 @@ class Database {
     private $password = "adminpass";
     private $conn;
 
-    // Obtener conexión
+    // Obtener conexión de base de datos
     public function getConnection() {
         $this->conn = null;
         try {
