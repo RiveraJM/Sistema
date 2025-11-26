@@ -1,36 +1,34 @@
-version: '3.8'
+# Base PHP con Apache
+FROM php:8.2-apache
 
-services:
-  php:
-    build: .
-    container_name: php_app
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
-    volumes:
-      - ./public:/var/www/html
-    environment:
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_USER: admin
-      DB_PASS: adminpass
-      DB_NAME: sistema_clinico
-    user: root  # evita problemas de permisos en Windows
+# Instalar extensiones necesarias
+RUN apt-get update && apt-get install -y \
+    git zip unzip libzip-dev libpng-dev libonig-dev libxml2-dev \
+    && docker-php-ext-install pdo pdo_mysql mysqli gd \
+    && rm -rf /var/lib/apt/lists/*
 
-  db:
-    image: mysql:8.0
-    container_name: mysql_app
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: sistema_clinico
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: adminpass
-    ports:
-      - "3307:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./sistema_clinico.sql:/docker-entrypoint-initdb.d/sistema_clinico.sql
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-volumes:
-  db_data:
+# Activar mod_rewrite de Apache
+RUN a2enmod rewrite
+
+# Establecer directorio de trabajo
+WORKDIR /var/www/html
+
+# Copiar la carpeta pública al contenedor primero
+COPY public /var/www/html
+
+# Copiar carpetas necesarias para PHP (config, includes)
+COPY config /var/www/html/config
+COPY includes /var/www/html/includes
+
+# Ajustar permisos de Apache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Instalar dependencias si existe composer.json
+RUN if [ -f composer.json ]; then composer install --no-interaction; fi
+
+# Exponer puerto 80
+EXPOSE 80

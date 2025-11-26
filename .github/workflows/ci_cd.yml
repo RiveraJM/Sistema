@@ -2,9 +2,7 @@ name: CI/CD PHP Docker
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    branches: ["develop"]
 
 jobs:
 
@@ -96,3 +94,8 @@ jobs:
           docker-compose up -d --build
           Write-Host "Despliegue completado."
           docker ps
+
+
+
+
+

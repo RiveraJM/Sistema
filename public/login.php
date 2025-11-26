@@ -17,7 +17,7 @@
                     <i class="fas fa-heartbeat"></i>
                 </div>
                 <h1>Sistema Clínico</h1>
-                <p>Gestión integral de pacientes y consultas médicas</p>
+                <p>Gestión integral para pacientes y consultas médicas</p>
             </div>
             
             <div class="login-features">
