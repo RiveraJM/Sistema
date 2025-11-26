@@ -55,14 +55,7 @@ jobs:
         run: |
           Write-Host "Ejecutando PHPUnit..."
 
-          docker exec php_app sh -c "
-            cd /var/www &&
-            mkdir -p tests-output &&
-            php ./vendor/bin/phpunit tests \
-              --log-junit tests-output/test_results.xml \
-              > tests-output/test_results.txt \
-            || echo 'PHPUnit falló, pero se generó este log.' > tests-output/test_results.txt
-          "
+          docker exec php_app sh -lc "cd /var/www && mkdir -p tests-output && php ./vendor/bin/phpunit tests --log-junit tests-output/test_results.xml > tests-output/test_results.txt || echo 'PHPUnit falló, revisar test_results.txt.' >> tests-output/test_results.txt"
 
           Write-Host 'Tests finalizados.'
 
@@ -99,7 +92,7 @@ jobs:
       - name: Deploy (restart without deleting DB)
         shell: powershell
         run: |
-          docker-compose down
+          docker-compose down          # SIN -v para NO borrar la BD
           docker-compose up -d --build
           Write-Host "Despliegue completado."
           docker ps
