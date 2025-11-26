@@ -20,8 +20,8 @@ WORKDIR /var/www/html
 COPY public /var/www/html
 
 # Copiar carpetas necesarias para PHP (config, includes)
-COPY config /var/www/html/config
-COPY includes /var/www/html/includes
+
+
 
 # Ajustar permisos de Apache
 RUN chown -R www-data:www-data /var/www/html \
